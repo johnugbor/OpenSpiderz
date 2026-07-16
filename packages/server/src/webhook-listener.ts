@@ -2,25 +2,29 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { JsonObject, JsonValue, NodeId, WorkflowId } from "@spiderz/shared";
 import { QueueManager } from "./queue-manager.js";
 import { WorkflowRepository } from "./workflow-repository.js";
+import { WebhookSignatureVerifier } from "./webhook-signature.js";
 
 interface WebhookParams { readonly workflowId: WorkflowId; readonly nodeId: NodeId; }
 const SENSITIVE_HEADERS = new Set(["authorization", "cookie", "proxy-authorization"]);
 
-export function registerWebhookListener(app: FastifyInstance, repository: WorkflowRepository, queue: QueueManager): void {
+export function registerWebhookListener(app: FastifyInstance, repository: WorkflowRepository, queue: QueueManager, signingSecret: string): void {
   app.route<{ Params: WebhookParams }>({
     method: ["GET", "POST"],
     url: "/webhook/:workflowId/:nodeId",
-    handler: async (request, reply) => handleWebhook(request, reply, repository, queue),
+    handler: async (request, reply) => handleWebhook(request, reply, repository, queue, signingSecret),
   });
 }
 
-async function handleWebhook(request: FastifyRequest<{ Params: WebhookParams }>, reply: { code(statusCode: number): { send(payload: JsonValue): unknown } }, repository: WorkflowRepository, queue: QueueManager): Promise<unknown> {
+async function handleWebhook(request: FastifyRequest<{ Params: WebhookParams }> & { rawBody?: Buffer }, reply: { code(statusCode: number): { send(payload: JsonValue): unknown } }, repository: WorkflowRepository, queue: QueueManager, signingSecret: string): Promise<unknown> {
   const { workflowId, nodeId } = request.params;
   if (!isIdentifier(workflowId) || !isIdentifier(nodeId)) return reply.code(400).send({ error: "Invalid workflow or node identifier." });
   const workflow = await repository.getEnabledById(workflowId);
   if (workflow === undefined) return reply.code(404).send({ error: "Workflow not found or disabled." });
   const node = workflow.nodes.find((candidate) => candidate.id === nodeId);
   if (node === undefined || node.type !== "trigger") return reply.code(404).send({ error: "Webhook trigger not found." });
+  const signature = request.headers["x-spiderz-signature"];
+  const supplied = Array.isArray(signature) ? signature[0] : signature;
+  if (request.rawBody === undefined || !new WebhookSignatureVerifier().verify(request.rawBody, supplied, signingSecret)) return reply.code(401).send({ error: "Invalid webhook signature." });
   const payload: JsonObject = {
     method: request.method,
     headers: requestHeaders(request),

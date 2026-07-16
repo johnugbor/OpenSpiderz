@@ -12,6 +12,8 @@ export interface RuntimeEnvironment {
   readonly redisPort: number;
   readonly host: string;
   readonly port: number;
+  readonly webhookSigningSecret: string;
+  readonly jwtSecret: string;
 }
 
 export function loadEnvironment(): RuntimeEnvironment {
@@ -25,6 +27,8 @@ export function loadEnvironment(): RuntimeEnvironment {
     redisPort: positiveInteger(process.env.REDIS_PORT ?? "6379", "REDIS_PORT"),
     host: process.env.HOST ?? "0.0.0.0",
     port: positiveInteger(process.env.PORT ?? "3000", "PORT"),
+    webhookSigningSecret: required("WEBHOOK_SIGNING_SECRET"),
+    jwtSecret: required("JWT_SECRET"),
   };
 }
 

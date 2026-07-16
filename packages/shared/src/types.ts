@@ -1,5 +1,6 @@
 /** JSON-compatible values accepted by workflow definitions and executions. */
 export type JsonPrimitive = string | number | boolean | null;
+export interface IBinaryData { readonly dataId: string; readonly mimeType: string; readonly fileName: string; readonly fileSize: number; }
 export type JsonValue = JsonPrimitive | JsonObject | JsonValue[];
 export interface JsonObject { readonly [key: string]: JsonValue; }
 
