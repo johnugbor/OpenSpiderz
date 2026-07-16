@@ -1,0 +1,22 @@
+{
+  "name": "spiderz",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "npm@10.9.2",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
+    "start:api": "npm run start --workspace=@spiderz/server",
+    "start:worker": "npm run start:worker --workspace=@spiderz/server",
+    "dev:web": "npm run dev --workspace=@spiderz/web",
+    "build:web": "npm run build --workspace=@spiderz/web"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.3"
+  }
+}

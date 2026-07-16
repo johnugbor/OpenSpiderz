@@ -1,0 +1,6 @@
+html, body, #root { height: 100%; margin: 0; font-family: Inter, system-ui, sans-serif; }
+.canvas-shell { height: 100%; display: grid; grid-template-rows: auto 1fr; }
+.canvas-shell header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid #e5e7eb; }
+.canvas-shell h1 { font-size: 1rem; margin: 0; }.canvas-shell button { border: 0; border-radius: 0.375rem; background: #2563eb; color: white; padding: 0.5rem 0.75rem; cursor: pointer; }
+.workflow-title, .save-controls { display: flex; align-items: center; gap: 0.5rem; }.workflow-title h1 { cursor: text; }.title-edit { visibility: hidden; background: transparent !important; color: #475569 !important; padding: 0.25rem !important; font-size: 1rem; }.workflow-title:hover .title-edit, .title-edit:focus-visible { visibility: visible; }.workflow-title input { width: min(22rem, 50vw); font: inherit; font-weight: 700; border: 1px solid #2563eb; border-radius: 0.25rem; padding: 0.35rem 0.5rem; }.title-save { padding: 0.35rem 0.5rem !important; }.save-controls span { color: #b91c1c; font-size: 0.8rem; }
+.workflow-node { min-width: 150px; border: 1px solid #cbd5e1; border-radius: 0.5rem; background: white; padding: 0.65rem 1rem; box-shadow: 0 1px 2px rgb(0 0 0 / 8%); display: grid; gap: 0.2rem; }.workflow-node small { color: #64748b; }
