@@ -2,7 +2,7 @@ import { Job, Worker } from "bullmq";
 import { Redis, type RedisOptions } from "ioredis";
 import { Pool, type PoolConfig } from "pg";
 import type { INodeExecutionRecord, IWorkflow, JsonValue, WorkflowId } from "@spiderz/shared";
-import { WorkflowExecutor, type NodeExecutorResolver } from "./workflow-executor.js";
+import { WorkflowExecutor, WorkflowExecutionError, type NodeExecutorResolver } from "./workflow-executor.js";
 
 export const WORKFLOW_EXECUTION_QUEUE = "workflow-executions";
 
@@ -35,6 +35,9 @@ export interface WorkflowWorkerOptions {
   readonly queueName?: string;
   readonly concurrency?: number;
   readonly beforeNodeExecute?: (node: import("@spiderz/shared").INode) => Promise<void> | void;
+  readonly getCredentialAccessToken?: (credentialId: string) => Promise<string>;
+  readonly onProgress?: (progress: WorkflowProgress) => Promise<void> | void;
+  readonly onExecutionFinished?: (state: import("@spiderz/shared").IExecutionState) => Promise<void> | void;
 }
 
 export interface WorkflowProgress {
@@ -63,15 +66,18 @@ async function processJob(job: Job<WorkflowExecutionJob>, options: WorkflowWorke
   if (workflow === undefined) throw new Error(`Workflow '${job.data.workflowId}' was not found.`);
   const executor = new WorkflowExecutor(options.resolveNodeExecutor);
   await job.updateProgress({ executionId: job.data.executionId, completed: 0, total: workflow.nodes.length, timestamp: new Date().toISOString() } satisfies Partial<WorkflowProgress>);
-  await executor.execute(workflow, {
+  try { const state = await executor.execute(workflow, {
     executionId: job.data.executionId,
     initialInput: job.data.initialData,
     ...(signal === undefined ? {} : { signal }),
     ...(options.beforeNodeExecute === undefined ? {} : { beforeNodeExecute: options.beforeNodeExecute }),
+    ...(options.getCredentialAccessToken === undefined ? {} : { getCredentialAccessToken: options.getCredentialAccessToken }),
     onNodeComplete: async (record, completed, total) => {
       const progress: WorkflowProgress = { executionId: job.data.executionId, nodeId: record.nodeId, status: record.status, completed, total, timestamp: new Date().toISOString() };
       await job.updateProgress(progress);
+      await options.onProgress?.(progress);
     },
-  });
+  }); await options.onExecutionFinished?.(state); }
+  catch (error: unknown) { if (error instanceof WorkflowExecutionError) await options.onExecutionFinished?.(error.execution); throw error; }
   return { executionId: job.data.executionId };
 }

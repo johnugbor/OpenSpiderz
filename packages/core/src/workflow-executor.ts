@@ -34,6 +34,7 @@ export interface INodeExecutionContext {
   readonly input: readonly JsonValue[];
   readonly inputByIndex: ReadonlyMap<number, readonly JsonValue[]>;
   readonly signal: AbortSignal;
+  readonly getCredentialAccessToken?: (credentialId: string) => Promise<string>;
 }
 
 /** Implemented by concrete built-in and custom node handlers. */
@@ -49,6 +50,7 @@ export interface IWorkflowExecutionOptions {
   readonly signal?: AbortSignal;
   readonly onNodeComplete?: (record: INodeExecutionRecord, completedCount: number, totalNodes: number) => Promise<void> | void;
   readonly beforeNodeExecute?: (node: INode) => Promise<void> | void;
+  readonly getCredentialAccessToken?: (credentialId: string) => Promise<string>;
 }
 
 interface Graph {
@@ -98,7 +100,7 @@ export class WorkflowExecutor {
           const evaluatedNode: INode = { ...node, parameters: await this.expressionParser.resolveParameters(node.parameters, { workflow, execution: this.snapshot(workflow, options.executionId, mutable), input }) };
           const executor = this.resolveNodeExecutor(evaluatedNode);
           if (executor === undefined) throw new Error(`No executor registered for node '${node.id}' (${node.name}).`);
-          const output = await executor.execute({ workflow, node: evaluatedNode, executionId: options.executionId, input, inputByIndex, signal });
+          const output = await executor.execute({ workflow, node: evaluatedNode, executionId: options.executionId, input, inputByIndex, signal, ...(options.getCredentialAccessToken === undefined ? {} : { getCredentialAccessToken: options.getCredentialAccessToken }) });
           const record: INodeExecutionRecord = { nodeId, attempt: 1, status: "succeeded", startedAt, finishedAt: new Date().toISOString(), input, output };
           return { nodeId, record, output, halt: false };
         } catch (caught: unknown) {
