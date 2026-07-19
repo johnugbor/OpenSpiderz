@@ -16,3 +16,8 @@ export * from "./credential-scope.js";
 export * from "./credential-promotion.js";
 export * from "./local-binary-storage.js";
 export * from "./binary-cleanup-worker.js";
+export * from "./s3-binary-storage.js";
+export * from "./binary-storage-factory.js";
+export * from "./upload-routes.js";
+export * from "./execution-routes.js";
+export * from "./execution-log-repository.js";
