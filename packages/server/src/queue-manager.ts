@@ -21,8 +21,10 @@ export interface QueueManagerOptions {
 export class QueueManager {
   private readonly connection: Redis;
   private readonly queue: Queue<WorkflowExecutionJob>;
+  public readonly redisOptions: RedisOptions;
 
   public constructor(options: QueueManagerOptions) {
+    this.redisOptions = options.redis;
     this.connection = new Redis({ ...options.redis, maxRetriesPerRequest: null });
     this.queue = new Queue(options.queueName ?? WORKFLOW_EXECUTION_QUEUE, { connection: this.connection });
   }
