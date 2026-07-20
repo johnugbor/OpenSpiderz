@@ -4,13 +4,15 @@ import { WorkflowNodeExecutor, type INodeExecutionContext } from "@spiderz/core"
 export class AirtableCreateRecordExecutor extends WorkflowNodeExecutor {
   public constructor(private readonly token: string | undefined) { super(); }
   public async execute(context: INodeExecutionContext): Promise<readonly JsonValue[]> {
-    if (this.token === undefined) throw new Error("Airtable is not configured. Set AIRTABLE_PERSONAL_ACCESS_TOKEN on the server.");
+    const credentialId = Object.values(context.node.credentials)[0];
+    const accessToken = typeof credentialId === "string" && context.getCredentialAccessToken !== undefined ? await context.getCredentialAccessToken(credentialId) : this.token;
+    if (accessToken === undefined) throw new Error("Airtable requires an Airtable OAuth2 credential or AIRTABLE_PERSONAL_ACCESS_TOKEN on the server.");
     const baseId = context.node.parameters.baseId, table = context.node.parameters.table;
     if (typeof baseId !== "string" || baseId.trim() === "" || typeof table !== "string" || table.trim() === "") throw new Error("Airtable requires a base ID and table name or ID.");
     const output: JsonValue[] = [];
     for (const item of context.input) {
       const fields = recordFields(item);
-      const response = await fetch(`https://api.airtable.com/v0/${encodeURIComponent(baseId)}/${encodeURIComponent(table)}`, { method: "POST", headers: { authorization: `Bearer ${this.token}`, "content-type": "application/json" }, body: JSON.stringify({ fields }), signal: context.signal });
+      const response = await fetch(`https://api.airtable.com/v0/${encodeURIComponent(baseId)}/${encodeURIComponent(table)}`, { method: "POST", headers: { authorization: `Bearer ${accessToken}`, "content-type": "application/json" }, body: JSON.stringify({ fields }), signal: context.signal });
       const payload = await response.json().catch(() => undefined) as JsonValue;
       if (!response.ok) throw new Error(`Airtable record creation failed (${response.status}): ${airtableError(payload)}.`);
       output.push(payload);

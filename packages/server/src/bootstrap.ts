@@ -20,6 +20,7 @@ import { registerCredentialRoutes } from "./credential-routes.js";
 import { registerGoogleOAuthRoutes } from "./google-oauth-routes.js";
 import { registerSlackOAuthRoutes } from "./slack-oauth-routes.js";
 import { registerNotionOAuthRoutes } from "./notion-oauth-routes.js";
+import { registerAirtableOAuthRoutes } from "./airtable-oauth-routes.js";
 import { CredentialCrypto } from "./credential-crypto.js";
 
 declare module "fastify" { interface FastifyRequest { rawBody?: Buffer; } }
@@ -50,6 +51,7 @@ export async function startApiServer(): Promise<void> {
   registerGoogleOAuthRoutes(app, { connectionString: env.databaseUrl }, new CredentialCrypto(env.credentialEncryptionKey), { clientId: env.googleOAuthClientId, clientSecret: env.googleOAuthClientSecret, redirectUri: env.googleOAuthRedirectUri });
   registerSlackOAuthRoutes(app, { connectionString: env.databaseUrl }, new CredentialCrypto(env.credentialEncryptionKey), env.slackOAuthClientId !== undefined && env.slackOAuthClientSecret !== undefined && env.slackOAuthRedirectUri !== undefined ? { clientId: env.slackOAuthClientId, clientSecret: env.slackOAuthClientSecret, redirectUri: env.slackOAuthRedirectUri } : undefined);
   registerNotionOAuthRoutes(app, { connectionString: env.databaseUrl }, new CredentialCrypto(env.credentialEncryptionKey), env.notionOAuthClientId !== undefined && env.notionOAuthClientSecret !== undefined && env.notionOAuthRedirectUri !== undefined ? { clientId: env.notionOAuthClientId, clientSecret: env.notionOAuthClientSecret, redirectUri: env.notionOAuthRedirectUri } : undefined);
+  registerAirtableOAuthRoutes(app, { connectionString: env.databaseUrl }, new CredentialCrypto(env.credentialEncryptionKey), env.airtableOAuthClientId !== undefined && env.airtableOAuthClientSecret !== undefined && env.airtableOAuthRedirectUri !== undefined ? { clientId: env.airtableOAuthClientId, clientSecret: env.airtableOAuthClientSecret, redirectUri: env.airtableOAuthRedirectUri } : undefined);
   registerManagementRoutes(app, { connectionString: env.databaseUrl });
   registerWebhookListener(app, repository, queue, env.webhookSigningSecret);
   registerFormListener(app, repository, queue);

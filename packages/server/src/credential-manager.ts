@@ -30,7 +30,9 @@ export class CredentialManager {
   private decrypt(row: StoredCredential): OAuth2Credential { const encrypted: EncryptedCredential = { ciphertext: row.secret_ciphertext, iv: row.secret_iv, authTag: row.secret_auth_tag, keyVersion: row.key_version }; return { id: row.id, provider: row.provider, tokenUrl: row.token_url, secrets: JSON.parse(this.crypto.decrypt(encrypted)) as OAuth2Secrets, expiresAt: row.expires_at }; }
   private async refresh(current: OAuth2Credential): Promise<OAuth2Credential> {
     const body = new URLSearchParams({ grant_type: "refresh_token", refresh_token: current.secrets.refreshToken, client_id: current.secrets.clientId, client_secret: current.secrets.clientSecret });
-    const response = await fetch(current.tokenUrl, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json" }, body, signal: AbortSignal.timeout(15_000) });
+    const headers: Record<string, string> = { "content-type": "application/x-www-form-urlencoded", accept: "application/json" };
+    if (current.provider === "airtable") headers.authorization = `Basic ${Buffer.from(`${current.secrets.clientId}:${current.secrets.clientSecret}`, "utf8").toString("base64")}`;
+    const response = await fetch(current.tokenUrl, { method: "POST", headers, body, signal: AbortSignal.timeout(15_000) });
     if (!response.ok) throw new Error(`OAuth2 refresh for ${current.provider} failed (${response.status}).`);
     const payload = await response.json() as { access_token?: unknown; refresh_token?: unknown; expires_in?: unknown };
     if (typeof payload.access_token !== "string" || typeof payload.expires_in !== "number") throw new Error(`OAuth2 provider ${current.provider} returned an invalid token response.`);
