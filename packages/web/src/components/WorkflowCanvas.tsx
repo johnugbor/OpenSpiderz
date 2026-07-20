@@ -42,9 +42,10 @@ function connectionId(connection: IConnection): string {
 
 function WorkflowNode({ data }: NodeProps<WorkflowFlowNode>): ReactElement {
   const node = data.workflowNode;
+  const icon = node.type === "trigger" ? "⚡" : node.name === "Code" ? "⌘" : node.name === "HTTP Request" ? "↗" : node.name === "Postgres" ? "▦" : node.name === "Gmail" || node.name === "Outlook" ? "✉" : node.name === "Google Sheets" ? "▤" : "◈";
   return <div className={`workflow-node node-${data.executionStatus ?? "idle"}`}>
     {node.type !== "trigger" && <Handle type="target" position={Position.Left} id="in-0" title="Click to complete connection" onClick={(event) => { event.stopPropagation(); data.onCompleteConnection?.(node.id); }} />}
-    <strong>{node.name}</strong><small>{node.type}</small>
+    <span className="workflow-node-icon" aria-hidden="true">{icon}</span><span className="workflow-node-copy"><strong>{node.name}</strong><small>{node.type === "trigger" ? "Trigger" : "Action"}</small></span><span className="workflow-node-status" aria-hidden="true"/>
     <Handle type="source" position={Position.Right} id="out-0" title="Drag or click to start connection" onClick={(event) => { event.stopPropagation(); data.onStartConnection?.(node.id); }} />
   </div>;
 }

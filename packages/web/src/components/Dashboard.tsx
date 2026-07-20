@@ -17,6 +17,7 @@ import { slackAuthorizationUrl } from "../api/slack-oauth.js";
 import { notionAuthorizationUrl } from "../api/notion-oauth.js";
 import { airtableAuthorizationUrl } from "../api/airtable-oauth.js";
 import { outlookAuthorizationUrl } from "../api/outlook-oauth.js";
+import { credentials } from "../api/credentials.js";
 
 type Summary = { id: string; name: string; enabled: boolean; updated_at: string; last_execution_status: string | null };
 type Workspace = { id: string; name: string; environment: string; role: string; organization_name: string };
@@ -44,6 +45,7 @@ export function Dashboard({ onOpen, onSignOut }: { readonly onOpen: (workflow: I
   const [inviteLink, setInviteLink] = useState<string>();
   const [showAcceptInvite, setShowAcceptInvite] = useState(false);
   const [invitationToken, setInvitationToken] = useState("");
+  const [connectedProviders, setConnectedProviders] = useState<ReadonlySet<string>>(new Set());
 
   const current = available.find((item) => item.id === workspace);
   const canEdit = current?.role !== "read_only";
@@ -73,6 +75,12 @@ export function Dashboard({ onOpen, onSignOut }: { readonly onOpen: (workflow: I
     const timer = window.setTimeout(() => setNotice(undefined), 4_000);
     return () => window.clearTimeout(timer);
   }, [notice]);
+  useEffect(() => {
+    if (workspace.trim() === "") { setConnectedProviders(new Set()); return; }
+    void credentials()
+      .then((items) => setConnectedProviders(new Set(items.filter((item) => item.type === "oauth2").map((item) => item.name.replace(/ OAuth2$/i, "").toLowerCase()))))
+      .catch(() => setConnectedProviders(new Set()));
+  }, [workspace]);
 
   const choose = (id: string): void => {
     setWorkspace(id);
@@ -94,21 +102,22 @@ export function Dashboard({ onOpen, onSignOut }: { readonly onOpen: (workflow: I
   const connectNotion = (): void => { void notionAuthorizationUrl().then((url) => { window.open(url, "spiderz-notion-oauth", "popup,width=560,height=700"); setNotice("Choose the Notion pages to share in the window that opened, then refresh this page."); }).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Could not start Notion authorization.")); };
   const connectAirtable = (): void => { void airtableAuthorizationUrl().then((url) => { window.open(url, "spiderz-airtable-oauth", "popup,width=560,height=700"); setNotice("Choose the Airtable bases to share in the window that opened, then refresh this page."); }).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Could not start Airtable authorization.")); };
   const connectOutlook = (): void => { void outlookAuthorizationUrl().then((url) => { window.open(url, "spiderz-outlook-oauth", "popup,width=560,height=700"); setNotice("Complete Microsoft authorization in the window that opened, then refresh this page."); }).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Could not start Microsoft authorization.")); };
+  const connected = (provider: string): boolean => connectedProviders.has(provider);
 
   return <main className="dashboard">
     <header className="dashboard-header">
       <div><h1>Workflows</h1>{current !== undefined && <small>{current.role.replace("_", " ")} access</small>}</div>
       <div className="dashboard-actions">
         <select aria-label="Workspace" value={workspace} onChange={(event) => choose(event.target.value)}>
-          {available.map((item) => <option key={item.id} value={item.id}>{item.organization_name} / {item.name} ({item.environment})</option>)}
+          {available.map((item) => <option key={item.id} value={item.id}>{item.organization_name} / {item.name}</option>)}
         </select>
         <button onClick={() => setShowAcceptInvite(true)}>Join workspace</button>
         {canManage && <button onClick={openMembers}>Members</button>}
-        {canEdit && <button onClick={connectGoogle}>Connect Google</button>}
-        {canEdit && <button onClick={connectSlack}>Connect Slack</button>}
-        {canEdit && <button onClick={connectNotion}>Connect Notion</button>}
-        {canEdit && <button onClick={connectAirtable}>Connect Airtable</button>}
-        {canEdit && <button onClick={connectOutlook}>Connect Outlook</button>}
+        {canEdit && <button className={connected("google") ? "integration-connected" : undefined} onClick={connectGoogle}>{connected("google") ? "✓ Google" : "Connect Google"}</button>}
+        {canEdit && <button className={connected("slack") ? "integration-connected" : undefined} onClick={connectSlack}>{connected("slack") ? "✓ Slack" : "Connect Slack"}</button>}
+        {canEdit && <button className={connected("notion") ? "integration-connected" : undefined} onClick={connectNotion}>{connected("notion") ? "✓ Notion" : "Connect Notion"}</button>}
+        {canEdit && <button className={connected("airtable") ? "integration-connected" : undefined} onClick={connectAirtable}>{connected("airtable") ? "✓ Airtable" : "Connect Airtable"}</button>}
+        {canEdit && <button className={connected("outlook") ? "integration-connected" : undefined} onClick={connectOutlook}>{connected("outlook") ? "✓ Outlook" : "Connect Outlook"}</button>}
         {canEdit && <button onClick={() => void createWorkflow().then(onOpen)}>New workflow</button>}
         <button className="secondary" disabled={loading} onClick={load}>{loading ? "Refreshing…" : "Refresh"}</button>
         <button className="secondary" onClick={onSignOut}>Sign out</button>
