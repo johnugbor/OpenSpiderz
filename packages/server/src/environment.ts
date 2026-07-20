@@ -32,6 +32,9 @@ export interface RuntimeEnvironment {
   readonly slackOAuthRedirectUri?: string;
   readonly telegramBotToken?: string;
   readonly notionApiToken?: string;
+  readonly notionOAuthClientId?: string;
+  readonly notionOAuthClientSecret?: string;
+  readonly notionOAuthRedirectUri?: string;
   readonly airtablePersonalAccessToken?: string;
   readonly microsoftGraphAccessToken?: string;
 }
@@ -63,6 +66,7 @@ export function loadEnvironment(): RuntimeEnvironment {
     ...(process.env.SLACK_OAUTH_CLIENT_ID === undefined || process.env.SLACK_OAUTH_CLIENT_SECRET === undefined || process.env.SLACK_OAUTH_REDIRECT_URI === undefined ? {} : { slackOAuthClientId: process.env.SLACK_OAUTH_CLIENT_ID, slackOAuthClientSecret: process.env.SLACK_OAUTH_CLIENT_SECRET, slackOAuthRedirectUri: process.env.SLACK_OAUTH_REDIRECT_URI }),
     ...(process.env.TELEGRAM_BOT_TOKEN === undefined ? {} : { telegramBotToken: process.env.TELEGRAM_BOT_TOKEN }),
     ...(process.env.NOTION_API_TOKEN === undefined ? {} : { notionApiToken: process.env.NOTION_API_TOKEN }),
+    ...(process.env.NOTION_OAUTH_CLIENT_ID === undefined || process.env.NOTION_OAUTH_CLIENT_SECRET === undefined || process.env.NOTION_OAUTH_REDIRECT_URI === undefined ? {} : { notionOAuthClientId: process.env.NOTION_OAUTH_CLIENT_ID, notionOAuthClientSecret: process.env.NOTION_OAUTH_CLIENT_SECRET, notionOAuthRedirectUri: process.env.NOTION_OAUTH_REDIRECT_URI }),
     ...(process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN === undefined ? {} : { airtablePersonalAccessToken: process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN }),
     ...(process.env.MICROSOFT_GRAPH_ACCESS_TOKEN === undefined ? {} : { microsoftGraphAccessToken: process.env.MICROSOFT_GRAPH_ACCESS_TOKEN }),
     ...s3,

@@ -14,6 +14,7 @@ import {
 import { acceptInvitation, invitations, inviteMember, members, removeMember, revokeInvitation, updateMemberRole, type MemberRole, type PendingInvitation, type WorkspaceMember } from "../api/members.js";
 import { googleAuthorizationUrl } from "../api/google-oauth.js";
 import { slackAuthorizationUrl } from "../api/slack-oauth.js";
+import { notionAuthorizationUrl } from "../api/notion-oauth.js";
 
 type Summary = { id: string; name: string; enabled: boolean; updated_at: string; last_execution_status: string | null };
 type Workspace = { id: string; name: string; environment: string; role: string; organization_name: string };
@@ -88,6 +89,7 @@ export function Dashboard({ onOpen, onSignOut }: { readonly onOpen: (workflow: I
   const acceptInvite = (): void => { void acceptInvitation(invitationToken).then(() => workspaces()).then((updatedWorkspaces) => { setAvailable(updatedWorkspaces); setShowAcceptInvite(false); setInvitationToken(""); setNotice("Invitation accepted. Choose the new workspace from the selector."); }).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Could not accept invitation.")); };
   const connectGoogle = (): void => { void googleAuthorizationUrl().then((url) => { window.open(url, "spiderz-google-oauth", "popup,width=560,height=700"); setNotice("Complete Google authorization in the window that opened, then refresh this page."); }).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Could not start Google authorization.")); };
   const connectSlack = (): void => { void slackAuthorizationUrl().then((url) => { window.open(url, "spiderz-slack-oauth", "popup,width=560,height=700"); setNotice("Complete Slack installation in the window that opened, then refresh this page."); }).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Could not start Slack authorization.")); };
+  const connectNotion = (): void => { void notionAuthorizationUrl().then((url) => { window.open(url, "spiderz-notion-oauth", "popup,width=560,height=700"); setNotice("Choose the Notion pages to share in the window that opened, then refresh this page."); }).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Could not start Notion authorization.")); };
 
   return <main className="dashboard">
     <header className="dashboard-header">
@@ -100,6 +102,7 @@ export function Dashboard({ onOpen, onSignOut }: { readonly onOpen: (workflow: I
         {canManage && <button onClick={openMembers}>Members</button>}
         {canEdit && <button onClick={connectGoogle}>Connect Google</button>}
         {canEdit && <button onClick={connectSlack}>Connect Slack</button>}
+        {canEdit && <button onClick={connectNotion}>Connect Notion</button>}
         {canEdit && <button onClick={() => void createWorkflow().then(onOpen)}>New workflow</button>}
         <button className="secondary" disabled={loading} onClick={load}>{loading ? "Refreshing…" : "Refresh"}</button>
         <button className="secondary" onClick={onSignOut}>Sign out</button>
