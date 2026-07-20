@@ -40,6 +40,9 @@ export interface RuntimeEnvironment {
   readonly airtableOAuthClientSecret?: string;
   readonly airtableOAuthRedirectUri?: string;
   readonly microsoftGraphAccessToken?: string;
+  readonly microsoftOAuthClientId?: string;
+  readonly microsoftOAuthClientSecret?: string;
+  readonly microsoftOAuthRedirectUri?: string;
 }
 
 export function loadEnvironment(): RuntimeEnvironment {
@@ -73,6 +76,7 @@ export function loadEnvironment(): RuntimeEnvironment {
     ...(process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN === undefined ? {} : { airtablePersonalAccessToken: process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN }),
     ...(process.env.AIRTABLE_OAUTH_CLIENT_ID === undefined || process.env.AIRTABLE_OAUTH_CLIENT_SECRET === undefined || process.env.AIRTABLE_OAUTH_REDIRECT_URI === undefined ? {} : { airtableOAuthClientId: process.env.AIRTABLE_OAUTH_CLIENT_ID, airtableOAuthClientSecret: process.env.AIRTABLE_OAUTH_CLIENT_SECRET, airtableOAuthRedirectUri: process.env.AIRTABLE_OAUTH_REDIRECT_URI }),
     ...(process.env.MICROSOFT_GRAPH_ACCESS_TOKEN === undefined ? {} : { microsoftGraphAccessToken: process.env.MICROSOFT_GRAPH_ACCESS_TOKEN }),
+    ...(process.env.MICROSOFT_OAUTH_CLIENT_ID === undefined || process.env.MICROSOFT_OAUTH_CLIENT_SECRET === undefined || process.env.MICROSOFT_OAUTH_REDIRECT_URI === undefined ? {} : { microsoftOAuthClientId: process.env.MICROSOFT_OAUTH_CLIENT_ID, microsoftOAuthClientSecret: process.env.MICROSOFT_OAUTH_CLIENT_SECRET, microsoftOAuthRedirectUri: process.env.MICROSOFT_OAUTH_REDIRECT_URI }),
     ...s3,
   };
 }

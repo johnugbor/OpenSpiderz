@@ -7,6 +7,7 @@ import { accessToken, signOut } from "./api/auth.js";
 import { workspaces } from "./api/dashboard.js";
 import { Dashboard } from "./components/Dashboard.js";
 import { OrganizationOnboarding } from "./components/OrganizationOnboarding.js";
+import { LandingPage } from "./components/LandingPage.js";
 import "./styles.css";
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
   const [checkingWorkspace, setCheckingWorkspace] = useState(signedIn);
   const [ready, setReady] = useState(false);
   const [workflow, setWorkflow] = useState<IWorkflow>();
+  const [showAuth, setShowAuth] = useState(false);
 
   useEffect(() => {
     if (!signedIn) { setReady(false); setCheckingWorkspace(false); return; }
@@ -27,7 +29,7 @@ function App() {
   }, [signedIn]);
 
   const leave = (): void => { signOut(); setWorkflow(undefined); setReady(false); setSignedIn(false); };
-  if (!signedIn) return <AuthScreen onAuthenticated={() => setSignedIn(true)}/>;
+  if (!signedIn) return showAuth ? <AuthScreen onAuthenticated={() => setSignedIn(true)}/> : <LandingPage onStart={() => setShowAuth(true)}/>;
   if (checkingWorkspace) return <main className="auth"><p>Loading workspace…</p></main>;
   if (!ready) return <OrganizationOnboarding onDone={() => setReady(true)}/>;
   return workflow === undefined ? <Dashboard onOpen={setWorkflow} onSignOut={leave}/> : <WorkflowCanvas initialWorkflow={workflow} onBack={() => setWorkflow(undefined)}/>;
