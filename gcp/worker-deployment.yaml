@@ -35,6 +35,8 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            runAsUser: 1000
+            runAsGroup: 1000
             capabilities:
               drop: ["ALL"]
         - name: cloud-sql-proxy

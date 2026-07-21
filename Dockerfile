@@ -27,6 +27,7 @@ EXPOSE 3000
 CMD ["node", "packages/server/dist/bootstrap.js"]
 
 FROM runtime AS worker
+USER node
 CMD ["node", "packages/server/dist/worker-bootstrap.js"]
 
 FROM nginxinc/nginx-unprivileged:1.27-alpine AS web
