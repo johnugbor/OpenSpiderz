@@ -22,6 +22,9 @@ test-results/
 # Environment files and secrets
 .env
 .env.*
+gcp/runtime.api.env
+gcp/runtime.worker.env
+gcp/api-secret-bindings.txt
 !.env.example
 !.env.*.example
 *.pem

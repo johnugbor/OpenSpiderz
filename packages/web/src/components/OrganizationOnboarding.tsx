@@ -1,7 +1,7 @@
 import { useState, type ReactElement } from "react";
 import { authorizedHeaders } from "../api/auth.js";
 
-const API = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
+const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 export function OrganizationOnboarding({ onDone }: { readonly onDone: () => void }): ReactElement {
   const [name, setName] = useState("");

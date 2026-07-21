@@ -2,7 +2,7 @@ import type { IWorkflow } from "@spiderz/shared";
 import { authorizedHeaders } from "./auth.js";
 import { currentWorkspaceId } from "./workspace.js";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 /** Persists the same graph object used by the canvas; credentials are references only. */
 export async function saveWorkflow(workflow: IWorkflow, signal?: AbortSignal, autosave = false, versionMessage?: string): Promise<void> {
