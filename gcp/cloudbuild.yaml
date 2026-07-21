@@ -1,0 +1,19 @@
+substitutions:
+  _TARGET: api
+  _IMAGE: us-central1-docker.pkg.dev/spiderz-502913/spiderz/spiderz-api:latest
+  _VITE_API_BASE_URL: ""
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --target
+      - ${_TARGET}
+      - --build-arg
+      - VITE_API_BASE_URL=${_VITE_API_BASE_URL}
+      - --tag
+      - ${_IMAGE}
+      - .
+
+images:
+  - ${_IMAGE}

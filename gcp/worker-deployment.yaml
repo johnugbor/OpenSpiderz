@@ -1,0 +1,59 @@
+# Apply after replacing IMAGE_URL and creating the spiderz-runtime Kubernetes Secret.
+# The worker has no public HTTP endpoint; it continuously consumes BullMQ jobs.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spiderz-worker
+  namespace: spiderz
+  labels:
+    app.kubernetes.io/name: spiderz-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: spiderz-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: spiderz-worker
+    spec:
+      serviceAccountName: spiderz-worker
+      containers:
+        - name: worker
+          image: IMAGE_URL
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: spiderz-runtime
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+        - name: cloud-sql-proxy
+          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.23.0
+          args:
+            - --address=0.0.0.0
+            - --port=5432
+            - spiderz-502913:us-central1:spiderz-postgres
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      securityContext:
+        runAsNonRoot: true

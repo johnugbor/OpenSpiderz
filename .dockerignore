@@ -1,0 +1,12 @@
+.git
+.env
+.env.*
+!.env.example
+node_modules
+packages/*/node_modules
+packages/*/dist
+coverage
+data
+uploads
+*.log
+README.md
