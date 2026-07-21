@@ -29,7 +29,7 @@ declare module "fastify" { interface FastifyRequest { rawBody?: Buffer; } }
 export async function startApiServer(): Promise<void> {
   const env = loadEnvironment();
   const app = Fastify({ logger: true, bodyLimit: 1_048_576, trustProxy: true });
-  await app.register(cors, { origin: env.corsOrigin, credentials: true, methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"] });
+  await app.register(cors, { origin: env.corsOrigin, credentials: true, methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"] });
   app.removeContentTypeParser("application/json");
   app.addContentTypeParser("application/json", { parseAs: "buffer" }, (request, body, done) => {
     const rawBody = Buffer.isBuffer(body) ? body : Buffer.from(body);

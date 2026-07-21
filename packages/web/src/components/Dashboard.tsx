@@ -111,21 +111,21 @@ export function Dashboard({ onOpen, onSignOut }: { readonly onOpen: (workflow: I
         <select aria-label="Workspace" value={workspace} onChange={(event) => choose(event.target.value)}>
           {available.map((item) => <option key={item.id} value={item.id}>{item.organization_name} / {item.name}</option>)}
         </select>
-        <button onClick={() => setShowAcceptInvite(true)}>Join workspace</button>
-        {canManage && <button onClick={openMembers}>Members</button>}
+        <button className="join-workspace-button" onClick={() => setShowAcceptInvite(true)}>Join workspace</button>
+        {canManage && <button className="members-button" onClick={openMembers}>Members</button>}
         {canEdit && <button className={connected("google") ? "integration-connected" : undefined} onClick={connectGoogle}>{connected("google") ? "✓ Google" : "Connect Google"}</button>}
         {canEdit && <button className={connected("slack") ? "integration-connected" : undefined} onClick={connectSlack}>{connected("slack") ? "✓ Slack" : "Connect Slack"}</button>}
         {canEdit && <button className={connected("notion") ? "integration-connected" : undefined} onClick={connectNotion}>{connected("notion") ? "✓ Notion" : "Connect Notion"}</button>}
         {canEdit && <button className={connected("airtable") ? "integration-connected" : undefined} onClick={connectAirtable}>{connected("airtable") ? "✓ Airtable" : "Connect Airtable"}</button>}
         {canEdit && <button className={connected("outlook") ? "integration-connected" : undefined} onClick={connectOutlook}>{connected("outlook") ? "✓ Outlook" : "Connect Outlook"}</button>}
-        {canEdit && <button onClick={() => void createWorkflow().then(onOpen)}>New workflow</button>}
-        <button className="secondary" disabled={loading} onClick={load}>{loading ? "Refreshing…" : "Refresh"}</button>
-        <button className="secondary" onClick={onSignOut}>Sign out</button>
+        {canEdit && <button className="new-workflow-button" onClick={() => void createWorkflow().then(onOpen)}>＋ New workflow</button>}
+        <button className="secondary refresh-button" disabled={loading} onClick={load}>{loading ? "Refreshing…" : "↻ Refresh"}</button>
+        <button className="secondary signout-button" onClick={onSignOut}>Sign out ↗</button>
       </div>
     </header>
     <div className="workflow-filters"><input className="workflow-search" placeholder="Search workflows" value={queryDraft} onChange={(event) => setQueryDraft(event.target.value)} /><select aria-label="Workflow filter" value={filter} onChange={(event) => { setFilter(event.target.value as WorkflowFilter); setPage(1); }}><option value="all">All workflows</option><option value="active">Active</option><option value="draft">Draft</option><option value="failed">Has failed runs</option><option value="owned">Owned by me</option></select></div>
     {notice !== undefined && <p className="notice" role="status">{notice}</p>}
-    {error !== undefined && <p className="error" role="alert">{error} <button type="button" onClick={load}>Try again</button></p>}
+    {error !== undefined && <p className="error" role="alert"><span>{error}</span><button type="button" onClick={load}>Try again</button><button type="button" className="message-close" aria-label="Dismiss error" onClick={() => setError(undefined)}>×</button></p>}
     {loading ? <p>Loading workflows...</p> : items.length === 0 ? <section className="workflow-empty"><h2>No workflows yet</h2><p>Create your first workflow to begin automating.</p>{canEdit && <button onClick={() => void createWorkflow().then(onOpen)}>Create workflow</button>}</section> : <><ul className="workflow-list">
       {items.map((item) => <li key={item.id}>
         <div><button className="workflow-open" onClick={() => void openWorkflow(item.id).then(onOpen)}>{item.name}</button><small>{item.enabled ? "Active" : "Disabled"} · Updated {new Date(item.updated_at).toLocaleString()}</small></div>
